@@ -75,10 +75,6 @@ A modern, responsive portfolio website built with React, Vite, and Tailwind CSS.
 
 4. Open your browser and visit `http://localhost:5173`
 
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
 ## 👤 Contact
 
 - Website: [portfoliocanh.vercel.app](https://portfoliocanh.vercel.app/)
