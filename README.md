@@ -75,27 +75,15 @@ A modern, responsive portfolio website built with React, Vite, and Tailwind CSS.
 
 4. Open your browser and visit `http://localhost:5173`
 
-## 🛠️ Build
-
-To build the project for production:
-
-```bash
-npm run build
-# or
-yarn build
-```
-
-The build files will be located in the `dist` directory.
-
 ## 📝 License
 
 This project is open source and available under the [MIT License](LICENSE).
 
 ## 👤 Contact
 
-- Website: [yourwebsite.com](https://yourwebsite.com)
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your Name](https://linkedin.com/in/yourprofile)
+- Website: [portfoliocanh.vercel.app](https://portfoliocanh.vercel.app/)
+- GitHub: [@BachCanh](https://github.com/BachCanh)
+- LinkedIn: [Bach Duc Canh](https://linkedin.com/in/BachCanh)
 
 ## 🙏 Acknowledgments
 
