@@ -1,8 +1,117 @@
+import { useState, useRef } from "react";
 import { personalInfo, socialLinks } from "../data";
 import useParticles from "../hooks/useParticles";
+import emailjs from "@emailjs/browser";
 
 const Contact = () => {
   useParticles(".contact-bg-particles");
+  const form = useRef();
+  const [formState, setFormState] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [submitStatus, setSubmitStatus] = useState({
+    submitting: false,
+    submitted: false,
+    error: false,
+    message: "",
+  });
+
+  // To manage copy success messages
+  const [copyStatus, setCopyStatus] = useState({
+    phone: false,
+    email: false,
+  });
+
+  // Handle input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormState({
+      ...formState,
+      [name]: value,
+    });
+  };
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitStatus({
+      submitting: true,
+      submitted: false,
+      error: false,
+      message: "",
+    });
+
+    // Add current date to form
+    const dateInput = document.createElement("input");
+    dateInput.type = "hidden";
+    dateInput.name = "date";
+    dateInput.value = new Date().toLocaleDateString();
+    form.current.appendChild(dateInput);
+
+    // Access environment variables
+    emailjs
+      .sendForm(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        form.current,
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      )
+      .then(
+        (result) => {
+          // Remove the temporary date input
+          form.current.removeChild(dateInput);
+
+          setSubmitStatus({
+            submitting: false,
+            submitted: true,
+            error: false,
+            message: "Message sent successfully! I'll get back to you soon.",
+          });
+          // Clear form
+          setFormState({ name: "", email: "", subject: "", message: "" });
+        },
+        (error) => {
+          // Remove the temporary date input
+          form.current.removeChild(dateInput);
+
+          console.log(error);
+          setSubmitStatus({
+            submitting: false,
+            submitted: true,
+            error: true,
+            message: "Something went wrong. Please try again later.",
+          });
+        }
+      );
+  };
+
+  // Function to handle copying content
+  const handleCopy = (text, type) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        // Set copy success for this type
+        setCopyStatus({ ...copyStatus, [type]: true });
+
+        // Reset status after 2 seconds
+        setTimeout(() => {
+          setCopyStatus({ ...copyStatus, [type]: false });
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+      });
+  };
+
+  // Create Google Maps search URL
+  const getGoogleMapsUrl = (location) => {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      location
+    )}`;
+  };
 
   return (
     <section
@@ -41,19 +150,27 @@ const Contact = () => {
                 icon="fa-phone"
                 label="Phone"
                 value={personalInfo.phone}
+                copyable
+                onCopy={() => handleCopy(personalInfo.phone, "phone")}
+                copied={copyStatus.phone}
                 href={`tel:${personalInfo.phone}`}
               />
               <ContactItem
                 icon="fa-envelope"
                 label="Email"
                 value={personalInfo.email}
+                copyable
+                onCopy={() => handleCopy(personalInfo.email, "email")}
+                copied={copyStatus.email}
                 href={`mailto:${personalInfo.email}`}
               />
               <ContactItem
                 icon="fa-map-marker-alt"
                 label="Location"
                 value={personalInfo.location}
-                href="#"
+                href={getGoogleMapsUrl(personalInfo.location)}
+                target="_blank"
+                rel="noopener noreferrer"
               />
               <ContactItem
                 icon="fab fa-github"
@@ -62,24 +179,6 @@ const Contact = () => {
                 href={personalInfo.github}
               />
             </ul>
-
-            <div className="mt-12">
-              <h4 className="text-2xl font-semibold mb-5">Follow Me</h4>
-              <div className="flex space-x-4">
-                {socialLinks.map((social, index) => (
-                  <a
-                    key={index}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xl flex items-center justify-center w-11 h-11 rounded-full bg-white/10 text-white/80 hover:bg-amber-500 hover:text-white transition-all duration-300 transform hover:scale-110"
-                    aria-label={social.platform}
-                  >
-                    <i className={social.icon}></i>
-                  </a>
-                ))}
-              </div>
-            </div>
           </div>
 
           <div
@@ -90,18 +189,69 @@ const Contact = () => {
             <h3 className="text-3xl font-semibold mb-6 text-white">
               Send Me a Message
             </h3>
-            <form className="space-y-5">
-              <FloatingLabelInput id="name" type="text" label="Your Name" />
-              <FloatingLabelInput id="email" type="email" label="Your Email" />
-              <FloatingLabelInput id="subject" type="text" label="Subject" />
-              <FloatingLabelTextarea id="message" label="Message" />
+
+            {submitStatus.submitted && (
+              <div
+                className={`mb-6 p-4 rounded-lg ${
+                  submitStatus.error ? "bg-red-700/60" : "bg-green-700/60"
+                }`}
+              >
+                <p className="text-white text-center">{submitStatus.message}</p>
+              </div>
+            )}
+
+            <form ref={form} onSubmit={handleSubmit} className="space-y-5">
+              <FloatingLabelInput
+                id="name"
+                name="name"
+                type="text"
+                label="Your Name"
+                value={formState.name}
+                onChange={handleChange}
+                required
+              />
+              <FloatingLabelInput
+                id="email"
+                name="email"
+                type="email"
+                label="How can I reach you?"
+                value={formState.email}
+                onChange={handleChange}
+                required
+              />
+              <FloatingLabelInput
+                id="subject"
+                name="subject"
+                type="text"
+                label="Subject"
+                value={formState.subject}
+                onChange={handleChange}
+                required
+              />
+              <FloatingLabelTextarea
+                id="message"
+                name="message"
+                label="Message"
+                value={formState.message}
+                onChange={handleChange}
+                required
+              />
 
               <div>
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-indigo-600 to-amber-500 text-white font-semibold py-4 px-10 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out flex items-center justify-center gap-2 w-full text-lg mt-2"
+                  disabled={submitStatus.submitting}
+                  className="bg-gradient-to-r from-indigo-600 to-amber-500 text-white font-semibold py-4 px-10 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out flex items-center justify-center gap-2 w-full text-lg mt-2 disabled:opacity-70"
                 >
-                  <i className="fas fa-paper-plane mr-2"></i>Send Message
+                  {submitStatus.submitting ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin mr-2"></i>Sending...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-paper-plane mr-2"></i>Send Message
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -112,53 +262,92 @@ const Contact = () => {
   );
 };
 
-const ContactItem = ({ icon, label, value, href }) => (
+const ContactItem = ({
+  icon,
+  label,
+  value,
+  href,
+  copyable,
+  onCopy,
+  copied,
+  target,
+  rel,
+}) => (
   <li className="flex items-start group">
     <div className="w-12 h-12 rounded-xl bg-white/10 group-hover:bg-amber-500 flex items-center justify-center mr-5 text-xl text-amber-500 group-hover:text-white transition-all duration-300 shrink-0">
       <i className={`fas ${icon}`}></i>
     </div>
-    <div>
+    <div className="flex-grow">
       <p className="text-white/70 text-sm font-medium">{label}</p>
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-lg hover:text-amber-500 transition-colors duration-200 break-all"
-      >
-        {value}
-      </a>
+      <div className="flex items-center gap-2">
+        <a
+          onClick={copyable ? onCopy : null}
+          href={copyable ? null : href}
+          target={target}
+          rel={rel}
+          className="text-lg cursor-pointer hover:text-amber-500 transition-colors duration-200 break-all"
+        >
+          {value}
+        </a>
+      </div>
+      {copied && (
+        <div className="text-amber-300 text-xs mt-1 animate-fade-out">
+          Copied to clipboard!
+        </div>
+      )}
     </div>
   </li>
 );
 
-const FloatingLabelInput = ({ id, type, label }) => (
+const FloatingLabelInput = ({
+  id,
+  name,
+  type,
+  label,
+  value,
+  onChange,
+  required,
+}) => (
   <div className="relative">
     <input
       type={type}
       id={id}
-      name={id}
+      name={name || id}
       placeholder=" "
-      className="peer w-full bg-transparent border-b-2 border-gray-600 focus:border-amber-500 focus:outline-none pt-4 pb-2 text-white"
+      value={value || ""}
+      onChange={onChange}
+      required={required}
+      className="peer mt-2 w-full bg-transparent border-b-2 border-gray-600 focus:border-amber-500 focus:outline-none pt-4 pb-2 text-white"
     />
     <label
       htmlFor={id}
-      className="absolute left-0 top-0 text-amber-300 transition-all
+      className="absolute mb-2 left-0 top-0 text-amber-300 transition-all
                peer-placeholder-shown:top-2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400
                peer-focus:top-0 peer-focus:text-sm peer-focus:text-amber-500"
     >
-      {label}
+      {label} {required && <span className="text-amber-500">*</span>}
     </label>
   </div>
 );
 
-const FloatingLabelTextarea = ({ id, label }) => (
+const FloatingLabelTextarea = ({
+  id,
+  name,
+  label,
+  value,
+  onChange,
+  required,
+}) => (
   <div className="relative">
     <textarea
       id={id}
-      name={id}
+      name={name || id}
       rows="5"
       placeholder=" "
-      className="peer w-full bg-transparent border-b-2 border-gray-600 focus:border-amber-500 focus:outline-none pt-4 pb-2 text-white resize-none"
+      value={value || ""}
+      onChange={onChange}
+      required={required}
+      className="peer mt-2 w-full bg-transparent border-b-2 border-gray-600 focus:border-amber-500 focus:outline-none pt-4 pb-2 text-white resize-none"
     ></textarea>
     <label
       htmlFor={id}
@@ -166,7 +355,7 @@ const FloatingLabelTextarea = ({ id, label }) => (
                peer-placeholder-shown:top-2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400
                peer-focus:top-0 peer-focus:text-sm peer-focus:text-amber-500"
     >
-      {label}
+      {label} {required && <span className="text-amber-500">*</span>}
     </label>
   </div>
 );

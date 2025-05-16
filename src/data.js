@@ -1,14 +1,14 @@
 // data.js
 export const personalInfo = {
   name: "Bach Duc Canh",
-  title: "Full Stack Engineer & Backend Developer",
+  title: "Intern Developer",
   phone: "+84 964 486 0387",
   email: "cbd1708@gmail.com",
   location: "Ho Chi Minh City, Vietnam",
   github: "https://github.com/BachCanh",
   imageUrl: "./profile.jpg",
   resumeUrl:
-    "https://drive.google.com/file/d/110eyPbZVrNv7FYGz3W9hjrhrVmFyJzY7/view?usp=drive_link", // Update this with the actual path to your CV
+    "https://drive.google.com/file/d/12qT7xacjd5s3OgEYP5MOohii3FjwqhU4/view?usp=sharing", // Update this with the actual path to your CV
 };
 
 export const aboutData = {
@@ -93,12 +93,19 @@ export const projects = [
 ];
 
 export const socialLinks = [
-  { platform: "LinkedIn", icon: "fab fa-linkedin-in", url: "#" },
-  { platform: "Twitter", icon: "fab fa-twitter", url: "#" },
+  {
+    platform: "LinkedIn",
+    icon: "fab fa-linkedin-in",
+    url: "https://www.linkedin.com/in/BachCanh/",
+  },
   {
     platform: "GitHub",
     icon: "fab fa-github",
     url: "https://github.com/BachCanh",
   },
-  { platform: "Facebook", icon: "fab fa-facebook-f", url: "#" },
+  {
+    platform: "Facebook",
+    icon: "fab fa-facebook-f",
+    url: "https://facebook.com/BachCanh2811",
+  },
 ];
