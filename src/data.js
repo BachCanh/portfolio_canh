@@ -8,7 +8,7 @@ export const personalInfo = {
   github: "https://github.com/BachCanh",
   imageUrl: "./profile.jpg",
   resumeUrl:
-    "https://drive.google.com/file/d/18oNeFCPqt53PYYntbEXnOTYmraexfxsY/view?usp=sharing", // Update this with the actual path to your CV
+    "https://drive.google.com/file/d/1jY4RRs0UlfshgIusMkxiF3ed-N6gSa36/view?usp=sharing", 
 };
 
 export const aboutData = {
